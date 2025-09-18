@@ -41,33 +41,80 @@ requests>=2.31.0
    ```
 
 ## 💻 Implementación del Código
-
+#Modulo para request de cualquier api de LLM
 ```python
 import requests
 import json
+from typing import Optional, Dict, Any
 
-url_api_ollama = "http://localhost:11434/api/generate"
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "model": "gpt-oss:20b",
-    "prompt": "Write a four-stanza poem about spring in the Eastern Republic of Uruguay. In English and Spanish.",
-}
+class OpenAIClient:
+    def __init__(self, base_url: str, api_key: Optional[str] = None):
+        self.__api_key = api_key
+        self.__base_url = base_url
+    
+    @property
+    def api_key(self) -> Optional[str]:
+        return self.__api_key
+    
+    @property
+    def base_url(self) -> str:
+        return self.__base_url
+    
+    @api_key.setter
+    def api_key(self, value: str):
+        if value is not None and not isinstance(value, str):
+            raise ValueError("API key must be a string or None.")
+        self.__api_key = value
+    
+    @base_url.setter
+    def base_url(self, value: str):
+        if not isinstance(value, str) or not value.startswith("http"):
+            raise ValueError("Base URL must be a valid URL string.")
+        self.__base_url = value
+    
+    def call(self, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None):
 
-response = requests.post(url_api_ollama, headers=headers, json=data, stream=True)
+        req_headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            req_headers["Authorization"] = f"Bearer {self.api_key}"
+        if headers:
+            req_headers.update(headers)
 
-if response.status_code == 200:
-    print("\nRespuesta de la API de Ollama:\n")
-    for line in response.iter_lines():
-        if line:
+        response = requests.post(self.base_url, json=data, headers=req_headers, stream=True)
+
+        if response.status_code != 200:
+            raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
+            return
+        
+        print("Response received:")
+        for line in response.iter_lines():
+            if not line:
+                continue
             obj = json.loads(line.decode("utf-8"))
             if "response" in obj:
                 print(obj["response"], end="")
-else:
-    print(f"Error: {response.status_code} - {response.text}")
+        print()
 ```
+## 💻 Implementación del Código Cliente
+#Cliente
+```python
+from promptLLM import OpenAIClient
 
+def main():
+    url_api_ollama = "http://localhost:11434/api/generate"
+
+    data = {
+        "model": "gpt-oss:20b",
+        "prompt": "Write a four-stanza poem about spring in the Eastern Republic of Uruguay. In English and Spanish.",
+    }
+
+    client = OpenAIClient(base_url=url_api_ollama)
+
+    client.call(data)
+
+if __name__ == "__main__":
+    main()
+```
 ## 📖 Salida Generada
 
 **Estrofa 1**  
