@@ -1,24 +1,45 @@
 import requests
 import json
+from typing import Optional, Dict, Any
 
+class OpenAIClient:
+    def __init__(self, base_url: str, api_key: Optional[str] = None):
+        self.api_key = api_key
+        self.base_url = base_url
+    
+    def call(self, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None):
+
+        req_headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            req_headers["Authorization"] = f"Bearer {self.api_key}"
+        if headers:
+            req_headers.update(headers)
+
+        response = requests.post(self.base_url, json=data, headers=req_headers, stream=True)
+
+        if response.status_code != 200:
+            raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
+            return
+        
+        print("Response received:")
+        for line in response.iter_lines():
+            if not line:
+                continue
+            obj = json.loads(line.decode("utf-8"))
+            if "response" in obj:
+                print(obj["response"], end="")
+        print()
 
 url_api_ollama = "http://localhost:11434/api/generate"
-headers = {
-    "Content-Type": "application/json"
-}
+
 data = {
     "model": "gpt-oss:20b",
     "prompt": "Write a four-stanza poem about spring in the Eastern Republic of Uruguay. In English and Spanish.",
 }
 
-response = requests.post(url_api_ollama, headers=headers, json=data, stream=True)
+client = OpenAIClient(base_url=url_api_ollama)
 
-if response.status_code == 200:
-    print("\nOllama API Response:\n")
-    for line in response.iter_lines():
-        if line:
-            obj = json.loads(line.decode("utf-8"))
-            if "response" in obj:
-                print(obj["response"], end="")
-else:
-    print(f"Error: {response.status_code} - {response.text}")
+client.call(data)
+
+
+
