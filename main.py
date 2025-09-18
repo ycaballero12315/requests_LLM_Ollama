@@ -1,6 +1,7 @@
 import requests
 import json
 
+
 url_api_ollama = "http://localhost:11434/api/generate"
 headers = {
     "Content-Type": "application/json"
