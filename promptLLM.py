@@ -4,8 +4,24 @@ from typing import Optional, Dict, Any
 
 class OpenAIClient:
     def __init__(self, base_url: str, api_key: Optional[str] = None):
-        self.api_key = api_key
-        self.base_url = base_url
+        self.__api_key = api_key
+        self.__base_url = base_url
+    
+    @property
+    def api_key(self) -> Optional[str]:
+        return self.__api_key
+    
+    @property
+    def base_url(self) -> str:
+        return self.__base_url
+    
+    @api_key.setter
+    def api_key(self, value: str):
+        self.__api_key = value
+    
+    @base_url.setter
+    def base_url(self, value: str):
+        self.__base_url = value
     
     def call(self, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None):
 
