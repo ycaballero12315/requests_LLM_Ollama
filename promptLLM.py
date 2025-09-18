@@ -17,10 +17,14 @@ class OpenAIClient:
     
     @api_key.setter
     def api_key(self, value: str):
+        if value is not None and not isinstance(value, str):
+            raise ValueError("API key must be a string or None.")
         self.__api_key = value
     
     @base_url.setter
     def base_url(self, value: str):
+        if not isinstance(value, str) or not value.startswith("http"):
+            raise ValueError("Base URL must be a valid URL string.")
         self.__base_url = value
     
     def call(self, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None):
