@@ -1,7 +1,6 @@
 from promptLLM import OpenAIClient
 
 def main():
-    pass
     url_api_ollama = "http://localhost:11434/api/generate"
 
     data = {
